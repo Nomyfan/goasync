@@ -51,8 +51,8 @@ func main() {
 	start := time.Now()
 	taskX.InvokeAsync()
 	taskY.InvokeAsync()
-	taskX.Await()
-	taskY.Await()
+	//taskX.Await() // Useless call here
+	//taskY.Await() // Useless call here
 
 	x, _ := taskX.GetResult().(int)
 	y, _ := taskY.GetResult().(int)
