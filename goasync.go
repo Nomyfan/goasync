@@ -1,4 +1,4 @@
-package async
+package goasync
 
 type Task struct {
 	done   chan bool
