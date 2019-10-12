@@ -2,7 +2,7 @@
 
 Task-based async calling like C#
 
-## Example
+## Example1
 ```go
 package main
 
@@ -67,4 +67,35 @@ func main() {
 	fmt.Printf("sum of x and y is %d \n", sum)
 	fmt.Printf("Elapsed: %d ms\n", elapsed.Milliseconds())
 }
+```
+
+## Example2
+```go
+package main
+
+import (
+	"fmt"
+	"goasync"
+	"time"
+)
+
+func main() {
+	task := goasync.StartNewResult(func() interface{} {
+		time.Sleep(3 * time.Second)
+		return 2
+	}).ContinueWithResult(func(t *goasync.Task) interface{} {
+		v, _ := t.GetResult().(int)
+		return v * v
+	}).ContinueWith(func(t *goasync.Task) {
+		fmt.Println("result is",t.GetResult())
+	})
+	fmt.Println("run first...")
+	task.Await()
+}
+```
+
+Output
+```
+run first...
+result is 4
 ```
