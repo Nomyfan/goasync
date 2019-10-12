@@ -99,3 +99,38 @@ Output
 run first...
 result is 4
 ```
+
+## Example3
+```go
+package main
+
+import (
+	"fmt"
+	"goasync"
+	"time"
+)
+
+func main() {
+	var tasks []*goasync.Task
+	start := time.Now().Second()
+	task1 := goasync.StartNewResult(func() interface{} {
+		time.Sleep(2 * time.Second)
+		return 4
+	})
+	task2 := goasync.StartNewResult(func() interface{} {
+		time.Sleep(3 * time.Second)
+		return 9
+	})
+	tasks = append(tasks, task1, task2)
+	ret := goasync.WaitAny(tasks)
+    // ret := goasync.WaitAll(tasks)
+	fmt.Println(time.Now().Second() - start)
+	fmt.Println(ret.GetResult())
+}
+```
+
+Output
+```
+2
+4
+```
