@@ -52,7 +52,6 @@ func (t *Task) GetResult() interface{} {
 }
 
 func (t *Task) ContinueWith(next func(t *Task)) *Task {
-
 	return StartNew(func() {
 		t.Await()
 		next(t)
@@ -60,7 +59,6 @@ func (t *Task) ContinueWith(next func(t *Task)) *Task {
 }
 
 func (t *Task) ContinueWithResult(next func(t *Task) interface{}) *Task {
-
 	return StartNewResult(func() interface{} {
 		t.Await()
 		return next(t)
@@ -86,11 +84,12 @@ func WhenAny(tasks []*Task) *Task {
 }
 
 func WaitAny(tasks []*Task) *Task {
-	any := make(chan int)
+	any := make(chan int, len(tasks))
 	for i, t := range tasks {
-		go func(task *Task, done chan int, index int) {
-			task.Await()
-			done <- index
+		func(task *Task, done chan int, index int) {
+			task.ContinueWith(func(t *Task) {
+				done <- index
+			})
 		}(t, any, i)
 	}
 	return tasks[<-any]
