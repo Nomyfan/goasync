@@ -19,15 +19,15 @@ type ResultTask interface {
 	Result() Any
 }
 
-type Task struct {
+type task struct {
 	done   chan bool
 	todo   func()
 	result Any
 }
 
-func newVoidTask(m func()) *Task {
+func newVoidTask(m func()) *task {
 	done := make(chan bool)
-	return &Task{done: done, todo: func() {
+	return &task{done: done, todo: func() {
 		m()
 		done <- true
 	}}
@@ -37,8 +37,8 @@ func NewVoidTask(m func()) VoidTask {
 	return newVoidTask(m)
 }
 
-func newResultTask(m func() Any) *Task {
-	task := Task{done: make(chan bool)}
+func newResultTask(m func() Any) *task {
+	task := task{done: make(chan bool)}
 	task.todo = func() {
 		task.result = m()
 		task.done <- true
@@ -62,42 +62,42 @@ func StartNewResultTask(m func() Any) ResultTask {
 	return task
 }
 
-func (t *Task) InvokeAsync() {
+func (t *task) InvokeAsync() {
 	go t.todo()
 }
 
-func (t *Task) Await() {
+func (t *task) Await() {
 	if _, ok := <-t.done; ok {
 		close(t.done)
 	}
 }
 
-func (t *Task) Result() Any {
+func (t *task) Result() Any {
 	t.Await()
 	return t.result
 }
 
-func (t *Task) ContinueWithVoidThenVoid(next func()) VoidTask {
+func (t *task) ContinueWithVoidThenVoid(next func()) VoidTask {
 	return StartNewVoidTask(func() {
 		t.Await()
 		next()
 	})
 }
 
-func (t *Task) ContinueWithVoidThenAny(next func() Any) ResultTask {
+func (t *task) ContinueWithVoidThenAny(next func() Any) ResultTask {
 	return StartNewResultTask(func() Any {
 		t.Await()
 		return next()
 	})
 }
 
-func (t *Task) ContinueWithAnyThenVoid(next func(any Any)) VoidTask {
+func (t *task) ContinueWithAnyThenVoid(next func(any Any)) VoidTask {
 	return StartNewVoidTask(func() {
 		next(t.Result())
 	})
 }
 
-func (t *Task) ContinueWithAnyThenAny(next func(Any) Any) ResultTask {
+func (t *task) ContinueWithAnyThenAny(next func(Any) Any) ResultTask {
 	return StartNewResultTask(func() Any {
 		return next(t.Result())
 	})
